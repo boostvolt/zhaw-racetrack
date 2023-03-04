@@ -2,19 +2,91 @@ name: CI
 
 on:
   repository_dispatch:
-    types: [ci]
+    types: [trigger]
 
 jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
+      - name: Retrieve Branch name
+        id: retrieve-branch-name
+        run: |
+          branch=$(echo "${{ github.event.client_payload.ref }}" | sed 's/refs\/heads\///')
+          echo "branch=$branch" >> $GITHUB_OUTPUT
+
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           repository: PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack
+          ref: ${{ steps.retrieve-branch-name.outputs.branch }}
           github-server-url: https://github.zhaw.ch
           token: ${{ secrets.ZHAW_GITHUB_API }}
           fetch-depth: 0
+
+      - name: Check if Draft PR already exists
+        id: check-pr-existence
+        run: |
+          response=$(curl -s -H "Authorization: Bearer ${{ secrets.ZHAW_GITHUB_API }}" "https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/pulls?head=${{ github.event.client_payload.ref }}&state=all")
+          if [[ "$response" == "[]" ]]; then
+            echo "exists=false" >> $GITHUB_OUTPUT
+          else
+            echo "exists=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Draft Pull Request
+        # if: steps.check-pr-existence.outputs.exists == 'false'
+        run: |
+          # body=$(cat .github/PULL_REQUEST_TEMPLATE.md)
+
+          PULL_REQUEST_SETTINGS=$(cat <<EOF
+          {
+            "title": ${{ steps.retrieve-branch-name.outputs.branch }},
+            "body": "body",
+            "draft": true,
+            "head": ${{ steps.retrieve-branch-name.outputs.branch }},
+            "base": "main"
+          }
+          EOF
+          )
+
+          # curl -X PATCH \
+          #   -H "Authorization: token ${{ secrets.ZHAW_GITHUB_API }}" \
+          #   -H "Accept: application/vnd.github.v3+json" \
+          #   https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/pulls \
+          #   -d "$PULL_REQUEST_SETTINGS" \
+
+          response=$(curl -s -H "Authorization: Bearer ${{ secrets.ZHAW_GITHUB_API }}" "https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/pulls?head=${{ github.event.client_payload.ref }}&state=all")
+          pr_number=$(echo "$response" | grep -oP '(?<="number":)\s*\K\d+(?=,|})')
+
+          creator=$(echo "${{ github.event.client_payload.sender.login }}")
+
+          ISSUE_ASSIGNEES=$(cat <<EOF
+          {
+           "assignees": ["$creator"]
+          }
+          EOF
+          )
+
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.ZHAW_GITHUB_API }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/issues/$pr_number/assignees \
+            -d "$ISSUE_ASSIGNEES" \
+
+          label=$(echo "${{ github.event.client_payload.ref }}" | sed 's/refs\/heads\/\([^/]*\)\/.*/\1/')
+
+          ISSUE_LABELS=$(cat <<EOF
+          {
+           "labels": ["$label"]
+          }
+          EOF
+          )
+
+          curl -X POST \
+           -H "Authorization: token ${{ secrets.ZHAW_GITHUB_API }}" \
+           -H "Accept: application/vnd.github.v3+json" \
+           https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/issues/${pr_number}/labels \
+           -d "$ISSUE_LABELS" \
 
       - name: Set up Java
         uses: actions/setup-java@v3
@@ -32,8 +104,8 @@ jobs:
 
       - name: Build and analyze
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          BRANCH_NAME: ${{ steps.retrieve-branch-name.outputs.branch }}
         run: |
           chmod +x gradlew
           ./gradlew build sonarqube --info
