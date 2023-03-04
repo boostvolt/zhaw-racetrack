@@ -27,33 +27,32 @@ jobs:
         id: check-pr-existence
         run: |
           response=$(curl -s -H "Authorization: Bearer ${{ secrets.ZHAW_GITHUB_API }}" "https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/pulls?head=${{ github.event.client_payload.ref }}&state=all")
-          if [[ "$response" == "[]" ]]; then
+          if [[ "$response" != *number* ]]; then
             echo "exists=false" >> $GITHUB_OUTPUT
           else
+            echo $response
             echo "exists=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Create Draft Pull Request
-        # if: steps.check-pr-existence.outputs.exists == 'false'
+        if: steps.check-pr-existence.outputs.exists == 'false'
         run: |
-          # body=$(cat .github/PULL_REQUEST_TEMPLATE.md)
-
           PULL_REQUEST_SETTINGS=$(cat <<EOF
           {
-            "title": ${{ steps.retrieve-branch-name.outputs.branch }},
-            "body": "body",
+            "title": "${{ steps.retrieve-branch-name.outputs.branch }}",
+            "body": "# Resolves #000\r\n\r\n**SonarCloud Report:** https://sonarcloud.io/summary/new_code?id=zhaw-lucky-7_team07-lucky7-projekt1-racetrack&branch=master\r\n\r\n### Description\r\n\r\nPlease provide a brief description of the changes you've made in this pull request.\r\n\r\n### Preconditions\r\n\r\nPlease provide a list of any preconditions that must be met before this pull request can be merged,\r\nif applicable.\r\n\r\n- [ ] Example #100\r\n\r\n### Checklist\r\n\r\nPlease make sure that the following items have been completed before submitting this pull request:\r\n\r\n- [ ] All code has been properly tested\r\n- [ ] All tests pass successfully\r\n- [ ] Code has been reviewed for clarity, readability, and maintainability\r\n- [ ] Code has been properly documented with JavaDoc comments\r\n\r\n### Definition of Done\r\n\r\nIn order to consider this pull request complete, the following criteria must be met:\r\n\r\n- The code has been tested thoroughly and all tests pass successfully\r\n- Code has been reviewed and approved by at least one other team member\r\n- Code has been merged into the main branch\r\n- Documentation has been updated to reflect any changes made in this pull request\r\n",
             "draft": true,
-            "head": ${{ steps.retrieve-branch-name.outputs.branch }},
+            "head": "${{ steps.retrieve-branch-name.outputs.branch }}",
             "base": "main"
           }
           EOF
           )
 
-          # curl -X PATCH \
-          #   -H "Authorization: token ${{ secrets.ZHAW_GITHUB_API }}" \
-          #   -H "Accept: application/vnd.github.v3+json" \
-          #   https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/pulls \
-          #   -d "$PULL_REQUEST_SETTINGS" \
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.ZHAW_GITHUB_API }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/pulls \
+            -d "$PULL_REQUEST_SETTINGS" \
 
           response=$(curl -s -H "Authorization: Bearer ${{ secrets.ZHAW_GITHUB_API }}" "https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/pulls?head=${{ github.event.client_payload.ref }}&state=all")
           pr_number=$(echo "$response" | grep -oP '(?<="number":)\s*\K\d+(?=,|})')
@@ -73,7 +72,7 @@ jobs:
             https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/issues/$pr_number/assignees \
             -d "$ISSUE_ASSIGNEES" \
 
-          label=$(echo "${{ github.event.client_payload.ref }}" | sed 's/refs\/heads\/\([^/]*\)\/.*/\1/')
+          label=$(echo "${{ steps.retrieve-branch-name.outputs.branch }}" | sed 's/\([^/]*\)\/.*/\1/')
 
           ISSUE_LABELS=$(cat <<EOF
           {
@@ -83,16 +82,16 @@ jobs:
           )
 
           curl -X POST \
-           -H "Authorization: token ${{ secrets.ZHAW_GITHUB_API }}" \
-           -H "Accept: application/vnd.github.v3+json" \
-           https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/issues/$pr_number/labels \
-           -d "$ISSUE_LABELS" \
+            -H "Authorization: token ${{ secrets.ZHAW_GITHUB_API }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/issues/$pr_number/labels \
+            -d "$ISSUE_LABELS" \
 
           pr_description=$(curl -s -H "Authorization: Bearer ${{ secrets.ZHAW_GITHUB_API }}" "https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/pulls/$pr_number" | grep -Po '(?<="body": ")[^"]*')
           issue_number=$(echo "${{ steps.retrieve-branch-name.outputs.branch }}" | sed 's/.*#\([^_]*\).*/\1/')
           pr_description=$(echo "$pr_description" | sed "s|000|$issue_number|g")
-          hashtag_branch_name=$(echo "${{ steps.retrieve-branch-name.outputs.branch }}" | sed 's/#/\\#/g')
-          pr_description=$(echo "$pr_description" | sed "s|master|$hashtag_branch_name|g")
+          sonar_branch_name=$(echo "${{ steps.retrieve-branch-name.outputs.branch }}" | sed 's|/|%2F%23|g' | sed 's|#||g')
+          pr_description=$(echo "$pr_description" | sed "s|master|$sonar_branch_name|g")
 
           PULL_REQUEST_BODY=$(cat <<EOF
           {
@@ -101,11 +100,11 @@ jobs:
           EOF
           )
 
-           curl -X PATCH \
-           -H "Authorization: token ${{ secrets.ZHAW_GITHUB_API }}" \
-           -H "Accept: application/vnd.github.v3+json" \
-           https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/pulls/$pr_number \
-           -d "$PULL_REQUEST_BODY" \
+          curl -X PATCH \
+            -H "Authorization: token ${{ secrets.ZHAW_GITHUB_API }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/pulls/$pr_number \
+            -d "$PULL_REQUEST_BODY" \
 
       - name: Set up Java
         uses: actions/setup-java@v3
