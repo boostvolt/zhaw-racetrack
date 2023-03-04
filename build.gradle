@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id 'jacoco'
     id "org.sonarqube" version "4.0.0.2929"
 }
 
@@ -22,6 +23,7 @@ dependencies {
 
     // Use JUnit Jupiter API for testing.
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.1'
     testImplementation 'org.hamcrest:hamcrest:2.2'
 
     // Use JUnit Jupiter Engine for testing.
@@ -33,25 +35,31 @@ version = '2023'
 
 application {
     // Define the main class for the application.
-    mainClass = 'ch.zhaw.pm2.racetrack.ConsoleApp'
+    mainClass = 'ch.zhaw.pm2.racetrack.RacetrackApp'
 }
 
 run {
     standardInput = System.in
 }
 
+jacocoTestReport {
+    reports {
+        xml.required = true
+    }
+}
+
 test {
-    // Use junit platform for unit tests
     useJUnitPlatform()
     testLogging {
         events "PASSED", "SKIPPED", "FAILED"
     }
 }
 
-sonarqube {
+sonar {
     properties {
-        property "sonar.projectKey", "boostvolt_zhaw-racetrack"
-        property "sonar.organization", "boostvolt"
+        property "sonar.projectKey", "zhaw-lucky-7_team07-lucky7-projekt1-racetrack"
+        property "sonar.organization", "zhaw-lucky-7"
         property "sonar.host.url", "https://sonarcloud.io"
+        property "sonar.branch.name", System.getenv("BRANCH_NAME")
     }
 }

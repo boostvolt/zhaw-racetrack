@@ -1,6 +1,9 @@
 package ch.zhaw.pm2.racetrack;
 
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Represents possible space types of the racetrack grid. <b></b>(This shall not be altered!)</b>
@@ -35,24 +38,32 @@ public enum SpaceType {
     }
 
     /**
+     * Detects the matching {@link SpaceType} for the provided character.
+     *
+     * @param spaceChar char value to return the matching {@link SpaceType} for
+     * @return {@link Optional < SpaceType >} matching the spaceChar,
+     * {@link Optional<SpaceType>#empty()} otherwise
+     */
+    public static Optional<SpaceType> spaceTypeForChar(char spaceChar) {
+        return Arrays.stream(SpaceType.values())
+            .filter(type -> type.spaceChar == spaceChar)
+            .findFirst();
+    }
+
+    /**
+     * Returns a set of all finish-type spaces.
+     *
+     * @return a set containing all finish-type spaces.
+     */
+    public static Set<SpaceType> getFinishSpaceTypes() {
+        return EnumSet.of(FINISH_UP, FINISH_DOWN, FINISH_LEFT, FINISH_RIGHT);
+    }
+
+    /**
      * @return spaceChar representing this {@link SpaceType}
      */
     public char getSpaceChar() {
         return spaceChar;
-    }
-
-    /**
-     * Detects the matching {@link SpaceType} for the provided character.
-     * @param spaceChar char value to return the matching {@link SpaceType} for
-     * @return {@link Optional < SpaceType >} matching the spaceChar, {@link Optional< SpaceType >#empty()} otherwise
-     */
-    public static Optional<SpaceType> spaceTypeForChar(char spaceChar) {
-        for (SpaceType type : SpaceType.values()) {
-            if (type.spaceChar == spaceChar) return Optional.of(type);
-        }
-        return Optional.empty();
-        // alternative version using streams
-        // return Arrays.stream(SpaceType.values()).filter(type -> type.spaceChar == spaceChar).findFirst();
     }
 
 }

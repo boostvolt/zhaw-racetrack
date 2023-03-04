@@ -2,16 +2,23 @@ name: CI
 
 on:
   repository_dispatch:
-    types: [ci]
+    types: [trigger]
 
 jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
+      - name: Retrieve Branch name
+        id: retrieve-branch-name
+        run: |
+          branch=$(echo "${{ github.event.client_payload.ref }}" | sed 's/refs\/heads\///')
+          echo "branch=$branch" >> $GITHUB_OUTPUT
+
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           repository: PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack
+          ref: ${{ steps.retrieve-branch-name.outputs.branch }}
           github-server-url: https://github.zhaw.ch
           token: ${{ secrets.ZHAW_GITHUB_API }}
           fetch-depth: 0
@@ -32,8 +39,64 @@ jobs:
 
       - name: Build and analyze
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          BRANCH_NAME: ${{ steps.retrieve-branch-name.outputs.branch }}
         run: |
           chmod +x gradlew
-          ./gradlew build sonarqube --info
+          ./gradlew build jacocoTestReport sonar --info
+
+      # - name: Create Draft Pull Request
+      #   if: always()
+      #   run: |
+      #     issue_number=$(echo "${{ steps.retrieve-branch-name.outputs.branch }}" | sed 's/.*#\([^_]*\).*/\1/')
+      #     sonar_branch_name=$(echo "${{ steps.retrieve-branch-name.outputs.branch }}" | sed 's|/|%2F%23|g' | sed 's|#||g')
+
+      #     PULL_REQUEST=$(cat <<EOF
+      #     {
+      #       "title": "${{ steps.retrieve-branch-name.outputs.branch }}",
+      #       "body": "# Resolves #$issue_number\r\n\r\n> SonarCloud: https://sonarcloud.io/project/overview?id=zhaw-lucky-7_team07-lucky7-projekt1-racetrack&branch=$sonar_branch_name\r\n\r\n## Description\r\n\r\nPlease provide a brief description of the changes you've made in this pull request.\r\n\r\n## Checklist\r\n\r\nPlease make sure that the following items have been completed before submitting this pull request:\r\n\r\n- [ ] All code has been properly tested\r\n- [ ] All tests pass successfully\r\n- [ ] Code has been reviewed for clarity, readability, and maintainability\r\n- [ ] Code has been properly documented with JavaDoc comments\r\n",
+      #       "draft": true,
+      #       "head": "${{ steps.retrieve-branch-name.outputs.branch }}",
+      #       "base": "main"
+      #     }
+      #     EOF
+      #     )
+
+      #     curl -X POST -m 10 \
+      #       -H "Authorization: token ${{ secrets.ZHAW_GITHUB_API }}" \
+      #       -H "Accept: application/vnd.github.v3+json" \
+      #       https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/pulls \
+      #       -d "$PULL_REQUEST" \
+
+      #     response=$(curl -m 10 -H "Authorization: Bearer ${{ secrets.ZHAW_GITHUB_API }}" "https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/pulls?head=PM2-IT22taWIN-muon-pero-pasu:${{ steps.retrieve-branch-name.outputs.branch }}&state=all")
+      #     pr_number=$(echo "$response" | grep -oP '(?<="number":)\s*\K\d+(?=,|})')
+
+      #     creator=$(echo "${{ github.event.client_payload.sender.login }}")
+
+      #     ISSUE_ASSIGNEES=$(cat <<EOF
+      #     {
+      #      "assignees": ["$creator"]
+      #     }
+      #     EOF
+      #     )
+
+      #     curl -X POST -m 10 \
+      #       -H "Authorization: token ${{ secrets.ZHAW_GITHUB_API }}" \
+      #       -H "Accept: application/vnd.github.v3+json" \
+      #       https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/issues/$pr_number/assignees \
+      #       -d "$ISSUE_ASSIGNEES" \
+
+      #     label=$(echo "${{ steps.retrieve-branch-name.outputs.branch }}" | sed 's/\([^/]*\)\/.*/\1/')
+
+      #     ISSUE_LABELS=$(cat <<EOF
+      #     {
+      #      "labels": ["$label"]
+      #     }
+      #     EOF
+      #     )
+
+      #     curl -X POST -m 10 \
+      #       -H "Authorization: token ${{ secrets.ZHAW_GITHUB_API }}" \
+      #       -H "Accept: application/vnd.github.v3+json" \
+      #       https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/issues/$pr_number/labels \
+      #       -d "$ISSUE_LABELS" \

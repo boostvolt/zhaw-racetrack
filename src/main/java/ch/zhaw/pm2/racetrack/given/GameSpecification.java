@@ -3,16 +3,13 @@ package ch.zhaw.pm2.racetrack.given;
 import ch.zhaw.pm2.racetrack.Direction;
 import ch.zhaw.pm2.racetrack.PositionVector;
 import ch.zhaw.pm2.racetrack.strategy.MoveStrategy;
-
 import java.util.List;
 
 /**
- * Interface representing the mandatory functions of the Game controller class.<br/>
- * IMPORTANT: This interface shall not be altered!<br/>
- * It specifies elements we use to test Racetrack for grading.<br/>
- * You may change or extend the default implementation provided in
- * {@link ch.zhaw.pm2.racetrack.Game}<br/>
- * Full Javadoc can be found in the implementation file.
+ * Interface representing the mandatory functions of the Game controller class.<br/> IMPORTANT: This
+ * interface shall not be altered!<br/> It specifies elements we use to test Racetrack for
+ * grading.<br/> You may change or extend the default implementation provided in
+ * {@link ch.zhaw.pm2.racetrack.Game}<br/> Full Javadoc can be found in the implementation file.
  */
 public interface GameSpecification {
 

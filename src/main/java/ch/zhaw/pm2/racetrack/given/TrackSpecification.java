@@ -4,20 +4,18 @@ import ch.zhaw.pm2.racetrack.PositionVector;
 import ch.zhaw.pm2.racetrack.SpaceType;
 
 /**
- * This interface specifies stuff we use to test Racetrack for grading. It shall not be altered!
- */
-/**
- * Interface representing the mandatory functions of the racetrack board.<br/>
- * IMPORTANT: This interface shall not be altered!<br/>
- * It specifies elements we use to test Racetrack for grading.<br/>
- * You may change or extend the default implementation provided in
- * {@link ch.zhaw.pm2.racetrack.Track}<br/>
- * Full Javadoc can be found in the implementation file.
+ * Interface representing the mandatory functions of the racetrack board.<br/> IMPORTANT: This
+ * interface shall not be altered!<br/> It specifies elements we use to test Racetrack for
+ * grading.<br/> You may change or extend the default implementation provided in
+ * {@link ch.zhaw.pm2.racetrack.Track}<br/> Full Javadoc can be found in the implementation file.
  */
 public interface TrackSpecification {
+
     int MAX_CARS = 9;
+    int MIN_CARS = 2;
 
     int getHeight();
+
     int getWidth();
 
     int getCarCount();

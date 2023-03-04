@@ -1,25 +1,29 @@
 package ch.zhaw.pm2.racetrack;
 
 /**
- * Holds a position (vector to x,y-position of the car on the track grid)
- * or a velocity vector (x,y-components of the velocity vector of a car).<br/>
- * PositionVectors are immutable, which means they cannot be modified.<br/>
- * Vector operations like {@link #add(PositionVector)} and {@link #subtract(PositionVector)}
- * return a new PositionVector containing the result.
+ * Holds a position (vector to x,y-position of the car on the track grid) or a velocity vector
+ * (x,y-components of the velocity vector of a car).<br/> PositionVectors are immutable, which means
+ * they cannot be modified.<br/> Vector operations like {@link #add(PositionVector)} and
+ * {@link #subtract(PositionVector)} return a new PositionVector containing the result.
  *
  * @author mach
  * @version FS2023
  */
 public final class PositionVector {
 
-    /** horizontal value (position / velocity) */
+    /**
+     * horizontal value (position / velocity)
+     */
     private final int x;
 
-    /** vertical value (position / velocity) */
+    /**
+     * vertical value (position / velocity)
+     */
     private final int y;
 
     /**
      * Base constructor, initializing the position using coordinates or a velocity vector
+     *
      * @param x horizontal value (position or velocity)
      * @param y vertical value (position or velocity)
      */
@@ -30,6 +34,7 @@ public final class PositionVector {
 
     /**
      * Copy constructor, copying the values from another PositionVector.
+     *
      * @param other position vector to copy from
      */
     public PositionVector(final PositionVector other) {
@@ -53,7 +58,9 @@ public final class PositionVector {
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof final PositionVector otherVector)) return false;
+        if (!(other instanceof final PositionVector otherVector)) {
+            return false;
+        }
         return this.y == otherVector.getY() && this.x == otherVector.getX();
     }
 
@@ -64,7 +71,7 @@ public final class PositionVector {
 
     @Override
     public String toString() {
-        return  "(X:" + this.x + ", Y:" + this.y + ")";
+        return "(X:" + this.x + ", Y:" + this.y + ")";
     }
 
     /**
@@ -83,14 +90,29 @@ public final class PositionVector {
     }
 
     /**
-     * Calculates the vector difference of the current vector to the given vector,
-     * i.e. subtracts the given from the current vectors coordinates. (e.g. car position and/or velocity vector) <br>
-     * The vectors values are not modified, but a new Vector containing the result is returned.
+     * Calculates the vector difference of the current vector to the given vector, i.e. subtracts
+     * the given from the current vectors coordinates. (e.g. car position and/or velocity vector)
+     * <br> The vectors values are not modified, but a new Vector containing the result is
+     * returned.
+     *
      * @param vector A position or velocity vector to subtract
      * @return A new PositionVector holding the result of the subtraction.
      */
     public PositionVector subtract(final PositionVector vector) {
         return new PositionVector(this.getX() - vector.getX(), this.getY() - vector.getY());
+    }
+
+    /**
+     * Calculates the vector dot product of the current vector and the given vector. (e.g.
+     * {@link Car} position and/or velocity vector)
+     * <br> The vectors values are not modified, but the result of the dot product is
+     * returned.
+     *
+     * @param vector A position or velocity vector to multiply with
+     * @return An {@link Integer} holding the result of the dot product.
+     */
+    public Integer dotProduct(final PositionVector vector) {
+        return (this.getX() * vector.getX() + this.getY() * vector.getY());
     }
 
 }
