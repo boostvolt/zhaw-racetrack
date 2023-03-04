@@ -85,8 +85,27 @@ jobs:
           curl -X POST \
            -H "Authorization: token ${{ secrets.ZHAW_GITHUB_API }}" \
            -H "Accept: application/vnd.github.v3+json" \
-           https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/issues/${pr_number}/labels \
+           https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/issues/$pr_number/labels \
            -d "$ISSUE_LABELS" \
+
+          pr_description=$(curl -s -H "Authorization: Bearer ${{ secrets.ZHAW_GITHUB_API }}" "https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/pulls/$pr_number" | grep -Po '(?<="body": ")[^"]*')
+          issue_number=$(echo "${{ steps.retrieve-branch-name.outputs.branch }}" | sed 's/.*#\([^_]*\).*/\1/')
+          pr_description=$(echo "$pr_description" | sed "s|000|$issue_number|g")
+          hashtag_branch_name=$(echo "${{ steps.retrieve-branch-name.outputs.branch }}" | sed 's/#/\\#/g')
+          pr_description=$(echo "$pr_description" | sed "s|master|$hashtag_branch_name|g")
+
+          PULL_REQUEST_BODY=$(cat <<EOF
+          {
+           "body": "$pr_description"
+          }
+          EOF
+          )
+
+           curl -X PATCH \
+           -H "Authorization: token ${{ secrets.ZHAW_GITHUB_API }}" \
+           -H "Accept: application/vnd.github.v3+json" \
+           https://github.zhaw.ch/api/v3/repos/PM2-IT22taWIN-muon-pero-pasu/team07-Lucky7-projekt1-racetrack/pulls/$pr_number \
+           -d "$PULL_REQUEST_BODY" \
 
       - name: Set up Java
         uses: actions/setup-java@v3

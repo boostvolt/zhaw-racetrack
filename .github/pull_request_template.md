@@ -1,4 +1,6 @@
-# Issue #000
+# Resolves #000
+
+[![Bugs](https://sonarcloud-badges.vercel.app/api/v1/project-badges/measure?project=zhaw-lucky-7_team07-lucky7-projekt1-racetrack&metric=bugs&branch=master)](https://sonarcloud.io/summary/new_code?id=zhaw-lucky-7_team07-lucky7-projekt1-racetrack) [![Code Smells](https://sonarcloud-badges.vercel.app/api/v1/project-badges/measure?project=zhaw-lucky-7_team07-lucky7-projekt1-racetrack&metric=code_smells&branch=master)](https://sonarcloud.io/summary/new_code?id=zhaw-lucky-7_team07-lucky7-projekt1-racetrack) [![Vulnerabilities](https://sonarcloud-badges.vercel.app/api/v1/project-badges/measure?project=zhaw-lucky-7_team07-lucky7-projekt1-racetrack&metric=vulnerabilities&branch=master)](https://sonarcloud.io/summary/new_code?id=zhaw-lucky-7_team07-lucky7-projekt1-racetrack) [![Coverage](https://sonarcloud-badges.vercel.app/api/v1/project-badges/measure?project=zhaw-lucky-7_team07-lucky7-projekt1-racetrack&metric=coverage&branch=master)](https://sonarcloud.io/summary/new_code?id=zhaw-lucky-7_team07-lucky7-projekt1-racetrack) [![Duplications](https://sonarcloud-badges.vercel.app/api/v1/project-badges/measure?project=zhaw-lucky-7_team07-lucky7-projekt1-racetrack&metric=duplicated_lines_density&branch=master)](https://sonarcloud.io/summary/new_code?id=zhaw-lucky-7_team07-lucky7-projekt1-racetrack)
 
 ### Description
 
